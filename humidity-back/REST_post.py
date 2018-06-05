@@ -9,7 +9,6 @@ import psycopg2
 app = Flask(__name__)
 
 # id sensor
-
 sensor_id = 0
 
 # base settings
@@ -50,6 +49,7 @@ def addOne():
 
     humidity = float(humid_json['humid'])
     temperture = float(temp_json['temp'])
+
     if humidity > 0.0 and humidity < 100.0 :
       content_send(humidity, temperture)
       return jsonify(200)
