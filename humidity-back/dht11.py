@@ -34,7 +34,7 @@ instance = dht11.DHT11(pin=14)
 
 def Send_post(humidity, temperature):
     global id
-    payload = {'humid': humidity, 'temp': temperature, 'ts': time.time()}
+    payload = {'humid': str(humidity), 'temp': str(temperature)}
     r = requests.post(Hostt, data=payload)
 
 def zero():
