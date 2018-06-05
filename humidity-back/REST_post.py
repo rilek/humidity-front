@@ -4,8 +4,13 @@ from flask import Flask
 from flask import jsonify
 from flask import request
 import numpy as np
+import psycopg2
 
 app = Flask(__name__)
+
+# id sensor
+
+sensor_id = 0
 
 # base settings
 User = 'harnas'
@@ -45,37 +50,43 @@ def addOne():
 
     humidity = float(humid_json['humid'])
     temperture = float(temp_json['temp'])
-
-    return jsonify(200)
+    if humidity > 0.0 and humidity < 100.0 :
+      content_send(humidity, temperture)
+      return jsonify(200)
+    else:
+      print("Valid humidity!")
+      return jsonify(500)
 
 def connector():
     global User, Passw, Hostt, dtbs, base, connect
     try:
-        connect = pymysql.connect(host=Hostt, user=User, password=Passw, db=dtbs)
-        base = connect.cursor
+        connect = psycopg2.connect(host=Hostt, user=User, password=Passw, dbname=dtbs)
     except:
         print("Error database connection !")
         sleep(1)
         connector()
 
-def content_send(content_name):
-    global base
+def content_send(f_humid, f_temp):
+    global base, connect, sensor_id
 
-    if content_name == "":
-        base.execute("INSERT ")
+    cursor = connect.cursor()
+    try:
+      cursor.execute( """INSERT INTO measurements (id_sensor, temperature, humidity, timestamp) VALUES (""" + sensor_id + """, """ + f_humid + """, """ + f_temp + """, """ + time.time()+ """);""" )
+    except:
+      print("Error sending date to database!")
 
-    elif content_name == "":
-        base.execute("")
-
-    elif content_name == "":
-        base.execute("")
 
 
 if __name__ == "__main__":
     try:
-        connect = pymysql.connect(host=Hostt, user=User, password=Passw, db=dtbs)
-        base = connect.cursor
+        connect = psycopg2.connect(host=Hostt, user=User, password=Passw, dbname=dtbs)
     except:
         connector()
 
-    app.run(host='localhost', port= 8181, debug=True)
+    app.run(host=Hostt, port= port, debug=True)
+
+
+
+
+
+
