@@ -42,16 +42,6 @@ def zero():
     humidity = 0.0
     temperature = 0.0
 
-def Connector():
-    global User, Passw, Hostt, dtbs
-    try:
-        connect = pymysql.connect(host=Hostt, user=User, password=Passw, db=dtbs)
-        base = connect.cursor
-    except:
-        print("Error database connection !")
-        sleep(1)
-        Connector()
-
 class DHT11Result:
     'DHT11 sensor result returned by DHT11.read() method'
 
