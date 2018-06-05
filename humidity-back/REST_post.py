@@ -42,16 +42,22 @@ def addOne():
     print("new_quark:")
     print(format(new_quark))
 
-    np_new_quark = np.array(new_quark)
+    #np_new_quark = np.array(new_quark)
+    #print(np_new_quark)
 
-    humid_json = np_new_quark[0]
-    temp_json = np_new_quark[1]
+    #humid_json = np_new_quark[0]
+    #temp_json = np_new_quark[1]
+
+    humid_json = new_quark
+    temp_json = new_quark
 
     humidity = float(humid_json['humid'])
     temperture = float(temp_json['temp'])
 
     if humidity > 0.0 and humidity < 100.0 :
-      content_send(humidity, temperture)
+      #content_send(humidity, temperture)
+      print ("humidity: " + str(humidity))
+      print ("temperature: " + str(temperture))
       return jsonify(200)
     else:
       print("Valid humidity!")
@@ -78,13 +84,13 @@ def content_send(f_humid, f_temp):
 
 
 if __name__ == "__main__":
-    try:
-        connect = psycopg2.connect(host=Hostt, user=User, password=Passw, dbname=dtbs)
-    except:
-        connector()
+    #try:
+    #    connect = psycopg2.connect(host=Hostt, user=User, password=Passw, dbname=dtbs)
+    #except:
+    #    connector()
 
-    app.run(host=Hostt, port= port, debug=True)
-
+    #app.run(host=Hostt, port= port, debug=True)
+    app.run(host='127.0.0.1', port= '5253', debug=True)
 
 
 
