@@ -1,0 +1,10 @@
+{
+  "db": {
+    "host": "51.15.87.74",
+    "port": "5432",
+    "name": "humidity",
+    "username": "harnas",
+    "password": "wojciech"
+  },
+  "port": 8888
+}
