@@ -8,7 +8,8 @@
   width: calc(50% - 20px);
   margin: 10px;
   padding: 10px;
-  background: #f6f6f6;
+  background: #fafafa;
+  border: 1px solid #f6f6f6;
 }
 
 div[id^="chart"] {
