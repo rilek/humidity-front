@@ -62,10 +62,11 @@ if __name__ == '__main__':
 
       print("humidity: " + str(hum[i]))
       print("temperature: " + str(temp[i]))
+      print(str(datetime.datetime.now()))
 
       payload = {'id_sensor': id_sensor, 'humid': str(hum[i]), 'temp': str(temp[i]), 'measured_at': str(datetime.datetime.now())}
-      #r = requests.post("51.15.87.74", data=payload)
-      r = requests.post(url="http://127.0.0.1:5253/quarks", json=payload)
+      r = requests.post("http://51.15.87.74:5253/quarks", json=payload)
+      # r = requests.post(url="http://127.0.0.1:5253/quarks", json=payload)
 
       sleep(1)
 

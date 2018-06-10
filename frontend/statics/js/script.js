@@ -38,7 +38,7 @@ let state = {disabledAlarm: {temperature: getCookie('disabled_temperature') === 
     const chart = state.sensors[data.id_sensor].chart;
     const _data = Object.assign({}, data, sensor);
 
-    chart.data.labels = newRow(chart.data.labels, moment(_data.measured_at).format("H:mm"));
+    chart.data.labels = newRow(chart.data.labels, _data.measured_at);
     chart.data.datasets.forEach(dataset => {
       dataset.data = newRow(dataset.data, _data[dataset.id])
     });
@@ -98,7 +98,7 @@ function genParams(sensor) {
   return {
       type: 'line',
       data: {
-        labels: sensor.measurements.map(item => moment(item.measured_at).format("H:mm")),
+        labels: sensor.measurements.map(item => item.measured_at),
         datasets: [
         {
           id: 'temperature',
@@ -168,12 +168,19 @@ function genParams(sensor) {
         },
         scales: {
           xAxes: [{
-            // type: 'time',
-            // time: {
-            //  displayFormats: {
-            //      'millisecond': 'hh:ss:SSS',
-            //   }
-            // }
+            type: 'time',
+            time: {
+             displayFormats: {
+                 'millisecond': 'HH:mm',
+                 'second': 'HH:mm',
+                 'hour': 'HH:mm',
+                 'day': 'HH:mm',
+                 'week': 'HH:mm',
+                 'month': 'HH:mm',
+                 'quarter': 'HH:mm',
+                 'year': 'HH:mm',
+              }
+            }
           }],
           yAxes: [{
             ticks: {
