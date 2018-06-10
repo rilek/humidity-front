@@ -56,7 +56,7 @@ function newRow(dataset, row) {
 
 function setAlarm(text, reason) {
   if(state.disabledAlarm[reason] !== true) {
-    const expirationTime = 10 * 1000; // 5 minutes
+    const expirationTime = 5 * 60 * 1000; // 5 minutes
     let date = moment().add(expirationTime, 'milliseconds');
     document.cookie=`disabled_${reason}=1;expires=${date};path=/`;
 
