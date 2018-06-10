@@ -2,7 +2,7 @@ const http = require('http');
 const express = require('express');
 const pg = require('pg');
 const socketio = require('socket.io');
-const c = require('./config/config.json');
+const c = require('../config/config.json');
 
 const app = express();
 const PORT = process.env.PORT || c.port;
