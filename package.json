@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node frontend/server.js",
-    "dev": "nodemon frontend/server.js"
+    "dev": "nodemon frontend/server.js",
+    "api": "python3 backend/REST_post.py"
   },
   "author": "",
   "license": "ISC",
