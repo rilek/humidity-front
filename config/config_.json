@@ -7,9 +7,5 @@
     "password": "wojciech"
   },
   "frontend": { "port": 8888 },
-  "backend": { "port": 5253 },
-  "raspberry": {
-    "host": "51.15.87.74",
-    "port": 5253
-  }
+  "backend": { "port": 5254 }
 }

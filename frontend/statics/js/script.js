@@ -32,12 +32,16 @@ let state = {disabledAlarm: {temperature: getCookie('disabled_temperature') === 
   });
 
   socket.on('new_data', function(data) {
-    const chart = state.sensors[data.id_sensor].chart;
+    const sensor = state.sensors[data.id_sensor];
+    delete sensor.measurements;
 
-    chart.data.labels = newRow(chart.data.labels,moment(new Date(data.measured_at)).format("D/MM HH:mm:ss:SS"));
-    chart.data.datasets.forEach(dataset => (
-      dataset.data = newRow(dataset.data, data[dataset.id])
-    ));
+    const chart = state.sensors[data.id_sensor].chart;
+    const _data = Object.assign({}, data, sensor);
+
+    chart.data.labels = newRow(chart.data.labels, moment(_data.measured_at).format("H:mm"));
+    chart.data.datasets.forEach(dataset => {
+      dataset.data = newRow(dataset.data, _data[dataset.id])
+    });
 
     checkForAlaramValues(data.id_sensor, data['temperature'], data['humidity']);
 

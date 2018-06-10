@@ -5,7 +5,7 @@ const socketio = require('socket.io');
 const c = require('../config/config.json');
 
 const app = express();
-const PORT = process.env.PORT || c.port;
+const PORT = process.env.PORT || c.frontend.port;
 const db_con_string = `tcp://${c.db.username}:${c.db.password}@${c.db.host}:${c.db.port}/${c.db.name}`;
 const postgre = new pg.Client(db_con_string);
 

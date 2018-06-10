@@ -5,7 +5,6 @@ import RPi
 import RPi.GPIO as GPIO
 import time
 import datetime
-import pymysql
 import sys
 import json
 import urllib2
@@ -32,9 +31,9 @@ temperature = 0.0
 # read data using pin 14
 instance = dht11.DHT11(pin=14)
 
-def Send_post(humidity, temperature):
+def Send_post(id_sensor, temperature, humidity, measured_at):
     global id
-    payload = {'humid': str(humidity), 'temp': str(temperature)}
+    payload = {'id_sensor': id_sensor, 'humid': str(humidity), 'temp': str(temperature), 'measured_at': measured_at}
     r = requests.post(Hostt, data=payload)
 
 def zero():
