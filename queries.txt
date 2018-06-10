@@ -1,0 +1,72 @@
+// create DATABASE
+CREATE DATABASE humidity;
+
+// create tables
+CREATE TABLE places (
+  id_place SERIAL NOT NULL PRIMARY KEY,
+  building integer,
+  floor integer,
+  room varchar(250)
+);
+
+CREATE TABLE sensors (
+  id_sensor SERIAL NOT NULL PRIMARY KEY,
+  if_place serial references places(id_place)
+);
+
+CREATE TABLE measurements (
+  id_measurement SERIAL NOT NULL PRIMARY KEY,
+  id_sensor serial references sensors(id_sensor),
+  temperature real,
+  humidity real,
+  measured_at TIMESTAMP
+);
+
+
+// trigger when insert into measurements
+CREATE FUNCTION notify_new_measurement() RETURNS trigger
+    AS $$
+    LANGUAGE plpgsql
+DECLARE
+BEGIN
+    PERFORM pg_notify('new_data', row_to_json(NEW)::text);
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER updated_measurement_trigger AFTER INSERT ON measurements
+FOR EACH ROW EXECUTE PROCEDURE notify_new_measurement();
+
+
+// insert into measurements
+// measured_at pattern: 'YYYY-MM-DD HH:mm:ss.SSSSSS'
+INSERT INTO measurements(id_sensor, temperature, humidity, measured_at) values(1, 1.0, 1.0, '2018-06-06 09:18:02.786123')
+
+// fetch v1
+SELECT
+  sensors.id_sensor, places.id_place, places.building, places.room, places.floor,
+  array_agg(row_to_json(measurements)) AS measurements
+FROM sensors, places, measurements
+WHERE places.id_place=sensors.id_place
+AND measurements.id_sensor=sensors.id_sensor
+GROUP BY sensors.id_sensor, places.id_place
+
+
+// fetch v2
+    SELECT json_build_object(
+      'id_sensor', id_sensor,
+      'id_place', sensors.id_place,
+      'min_temperature', sensors.min_temperature,
+      'max_temperature', sensors.max_temperature,
+      'min_humidity', sensors.min_humidity,
+      'max_humidity', sensors.max_humidity,
+      'building', places.building,
+      'floor', places.floor,
+      'room', places.room,
+      'measurements', (SELECT json_agg(row_to_json(measurements))
+                       FROM (SELECT * FROM measurements
+                             WHERE measurements.id_sensor=sensors.id_sensor
+                             ORDER BY measured_at DESC
+                             LIMIT 100) AS measurements))
+    FROM sensors, places
+    WHERE places.id_place=sensors.id_place

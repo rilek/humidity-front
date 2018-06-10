@@ -14,9 +14,10 @@ let query = postgre.query('LISTEN new_data');
 
 // Express routes and statics setup
 app.use('/statics', express.static(__dirname + '/statics'));
-app.use(express.static(__dirname + '/statics/html'));
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/statics/html/index.html'));
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/statics/html/index.html');
+  });
 
 
 // Create SocketIO server and configure messages
@@ -24,53 +25,39 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 io.on('connection', client => {
-  postgre.query(
-    `SELECT * FROM sensors
-     INNER JOIN places ON sensors.id_place=places.id_place
-     INNER JOIN measurements ON measurements.id_sensor=sensors.id_sensor
-     ORDER BY measurements.measured_at ASC
-     LIMIT 100`,
-    (err, data) => {
-      if(data.rows.length > 0) {
-        _data = Array.from(data.rows).reduce((result, obj) => {
-            const oid = obj['id_sensor'];
-            let measurement = {id_measurement: obj.id_measurement,
-                               temperature: obj.temperature,
-                               humidity: obj.humidity,
-                               measured_at: obj.measured_at};
+  // Fetch measurements
+  postgre.query(`
+    SELECT json_build_object(
+      'id_sensor', id_sensor,
+      'id_place', sensors.id_place,
+      'min_temperature', sensors.min_temperature,
+      'max_temperature', sensors.max_temperature,
+      'min_humidity', sensors.min_humidity,
+      'max_humidity', sensors.max_humidity,
+      'building', places.building,
+      'floor', places.floor,
+      'room', places.room,
+      'measurements', (SELECT json_agg(row_to_json(measurements))
+                       FROM (SELECT * FROM (SELECT *
+                                            FROM measurements
+                                            WHERE measurements.id_sensor=sensors.id_sensor
+                                            ORDER BY measured_at DESC
+                                            LIMIT 100) measurements
+                             ORDER BY measured_at ASC) AS measurements))
+    FROM sensors, places
+    WHERE places.id_place=sensors.id_place
+  `
+  ,
+  (err, data) => {
+    const _data = data.rows.map(item => item.json_build_object);
+    client.emit('connected', _data);
+  });
 
-            if(!result[oid]) {
-              result[oid] = {id_sensor: obj.id_sensor,
-                             id_place: obj.id_place,
-                             building: obj.building,
-                             room: obj.room,
-                             measurements: [measurement]};
-            } else {
-              result[oid].measurements.push(measurement);
-            }
-            return result;
-        }, {});
-        client.emit('connected', _data);
-      }
-    });
-
+  // Event triggered on new row in measurements table
   postgre.on('notification', function(new_data) {
     client.emit('new_data', JSON.parse(new_data.payload));
   });
-  client.on('ready for data', function (data) {
-  });
-
-  client.on('event', function(data){});
-  client.on('disconnect', function(){});
 });
 
 
 server.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
-
-// const query = postgre.query("INSERT INTO places(building, floor, room) values (1, 1, 'kuchnia')");
-// const query = postgre.query(`INSERT INTO measurements(id_sensor, temperature, humidity, timestamp)
-//                                                      values (1, 10.0, 12.0, ${new Date().valueOf()})`);
-// console.log(new Date().valueOf());
-// postgre.query("SELECT * FROM measurements", (err, data) => {
-//   console.log(data.rows);
-// });
