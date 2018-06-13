@@ -4,16 +4,19 @@
 ### Opis projektu
 Celem projektu jest zbudowanie systemu czujników wilgotności i temperatury mierzącego te parametry w pomieszczeniach hali produkcyjnej. Zapisane w bazie dane są wizualizowane w przygotowanej aplikacji internetowej. Dodatkowo stworzono prosty system alarmowania w przypadku, gdy wartości wyjdą poza ich bezpieczny, z góry ustalony zakres. System docelowo zostanie użyty w istniejącym przedsiębiorstwie `Colorland`.
 
+W celach demonstracyjnych panel WWW jest dostępny pod adresem [http://51.15.87.74:8888](http://51.15.87.74:8888).
+Repozytorium z kodem źródłowym mieści się na stronie [https://github.com/rilek/humidity-front](https://github.com/rilek/humidity-front).
+
 ### Architektura projektu
 Projekt można podzielić na 4 sekcje:
-1. Sprzętową - jest złożona z wielu urządzeń Raspberry, z czego do każdego podłączony jest czujnik temperatury i wilgotności DHT11,
+1. Sprzętową - jest złożona z urządzeń Raspberry, z czego do każdego podłączony jest czujnik temperatury i wilgotności `DHT11`,
 2. Backendową (serwerową) - jest to REST Api obsługujące jedno zapytanie - wysłanie nowego pomiaru, oraz serwer Websocket, który komunikuje się z bazą danych i częścią frontendową,
 3. Frontendową (interfejs) - interfejs graficzny komunikujący się poprzez websockety z bazą danych,
 4. Baza danych - zbiera wszystkie dane. Element pośredni pomiędzy REST API, a WebSocketami.
 
 Architekturę obrazuje poniższy obrazek:
 
-![Architektura](./docs/humidity_arch.png "Architektura")
+![Architektura systemu](./docs/humidity_arch.png "Architektura")
 
 
 ### Łańcuch komunikacji
@@ -23,13 +26,13 @@ RaspberryPI po wykonaniu pomiaru wysyła zapytanie POST do serwera REST z danymi
 Dodatkowo użytkownik wchodząc na stronę WWW łączy się z serwerem WebSocket, który przesyła mu 100 najnowszych pomiarów.
 
 ### Strona WWW
-Strona WWW jest dostępna jako demo pod adresem `51.15.87.74:8888`. Zawiera ona listę czujników ze szczegółowymi danymi, oraz wykresem wartości. Dane są aktualizowane w czasie rzeczywistym. Pokazywane jest 100 najnowszych pomiarów. Poziome linie oraz kolorowy obszar między nimi ilustruje zakres akceptowalnych wartości.
+Strona WWW jest dostępna jako demo pod adresem [http://51.15.87.74:8888](http://51.15.87.74:8888). Zawiera ona listę czujników ze szczegółowymi danymi, oraz wykresem wartości. Dane są aktualizowane w czasie rzeczywistym. Pokazywane jest 100 najnowszych pomiarów. Poziome linie oraz kolorowy obszar między nimi ilustruje zakres akceptowalnych wartości.
 
 Po przekroczeniu przez mierzony parametr wartości granicznej aktywowany jest alarm. W przypadku jego wyłączenia, kolejny alarm nie wystąpi przez okres 5 min.
 
 Przykładowy stan aplikacji www na obrazku poniżej:
 
-![WWW](./docs/humidity_www.png "WWW")
+![Panel WWW](./docs/humidity_www.png "WWW")
 
 ### Baza danych
 Baza danych złożona jest z 3 tabel:
@@ -39,7 +42,7 @@ Baza danych złożona jest z 3 tabel:
 
 Dokładną strukturę bazy obrazuje poniższy rysunek:
 
-![ERD](./docs/humidity_erd.png "ERD")
+![Diagram ERD](./docs/humidity_erd.png "ERD")
 
 #### SQL tworzący bazę danych
 ```
@@ -104,6 +107,7 @@ FROM sensors, places
 WHERE places.id_place=sensors.id_place
 ```
 
+
 Przykładowy kod SQL dodający kolejny pomiar:
 ```
 INSERT INTO measurements(id_sensor, temperature, humidity, measured_at) values(1, 1.0, 1.0, '2018-06-06 09:18:02.786123')
@@ -113,7 +117,7 @@ INSERT INTO measurements(id_sensor, temperature, humidity, measured_at) values(1
 #### Wymagania
 * PostgreSQL >= v9.6.0
 * Python >= v3.6.0
-* NODEJS >= v8.9.4
+* NodeJS >= v8.9.4
 * NPM >= v5.6.0
 
 #### Instalacja bibliotek
@@ -142,5 +146,5 @@ lub
 ```
 python3 backend/REST_post.py -p <port> -c <config_file.json>
 ```
-Domyślnie REST Api będzie dostępne pod adresem: `localhost:5253`.
+Parametry są opcjonalne. Domyślnie REST Api będzie dostępne pod adresem: `localhost:5253`.
 Druga wersja skryptu pozwala uruchomić backend bądź pod innym portem niż domyślny, bądź użyć innego pliku konfiguracyjnego o rozszerzeniu `.json`.
