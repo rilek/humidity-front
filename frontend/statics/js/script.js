@@ -77,8 +77,6 @@ let state = {app_container: $('#app'),
     sensor.custom_limits.push(data);
     updateLimits(chart, sensor);
 
-    console.log(sensor);
-
     table.append(html);
   });
 })();
@@ -93,7 +91,6 @@ function setAlarm(text, reason) {
     const expirationTime = 5 * 60 * 1000; // 5 minutes
     let date = moment().local().add(expirationTime, 'milliseconds');
     state.disabledAlarm[reason] = true;
-    console.log(date)
     document.cookie=`disabled_${reason}=1;expires=${date};path=/`;
 
     setTimeout(() => state.disabledAlarm[reason] = false, expirationTime);
@@ -136,15 +133,9 @@ function prepareForm(socket) {
   const $popup = $('.popup');
   $('.popup .close').on('click', () => {
     $popup.hide()
-    // $(document).off('click.popup');
   });
   $('.show-form').on('click', (e) => {
-    // e.stopPropagation();
     $popup.show(0.2);
-    // $(document).on('click.popup', function (e) {
-    //   if($(e.target).parents('.popup').length === 0 && $popup.is(":visible"))
-    //     $('.popup').hide();
-    // });
   });
   $('form #f-date_from, form #f-date_to').val(moment().local().format().slice(0,16));
 
@@ -199,7 +190,6 @@ function prepareLimitTable(socket, data, limitOrder) {
 
 function updateLimits(chart, sensor) {
   const new_limits = prepareLimits(sensor);
-  // console.log(new_limits);
   Object.keys(new_limits).forEach(limitName => {
     const idx = chart.data.datasets.findIndex(item => item.id === limitName);
     chart.data.datasets[idx].data = new_limits[limitName];
