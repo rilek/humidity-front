@@ -68,19 +68,49 @@ CREATE TABLE measurements (
   measured_at TIMESTAMP
 );
 
+CREATE TABLE custom_limits (
+  id_limit SERIAL NOT NULL PRIMARY KEY,
+  id_sensor serial references sensors(id_sensor),
+  max_temperature real,
+  min_temperature real,
+  max_humidity real,
+  min_humidity real,
+  date_from TIMESTAMP,
+  date_to TIMESTAMP
+);
 
-CREATE FUNCTION notify_new_measurement() RETURNS trigger
-    AS $$
-    LANGUAGE plpgsql
+
+CREATE OR REPLACE FUNCTION notify_new_measurement() RETURNS trigger
+    AS $BODY$
 DECLARE
 BEGIN
     PERFORM pg_notify('new_data', row_to_json(NEW)::text);
     RETURN NULL;
 END;
-$$;
+$BODY$
 
-CREATE TRIGGER updated_measurement_trigger AFTER INSERT ON measurements
+LANGUAGE plpgsql
+COST 100;
+
+CREATE OR REPLACE TRIGGER new_measurement_trigger AFTER INSERT ON measurements
 FOR EACH ROW EXECUTE PROCEDURE notify_new_measurement();
+
+
+
+CREATE OR REPLACE FUNCTION notify_new_limits() RETURNS trigger
+    AS $BODY$
+DECLARE
+BEGIN
+    PERFORM pg_notify('new_limits', row_to_json(NEW)::text);
+    RETURN NULL;
+END;
+$BODY$
+
+LANGUAGE plpgsql
+COST 100;
+
+CREATE TRIGGER updated_limits_trigger AFTER INSERT ON custom_limits
+FOR EACH ROW EXECUTE PROCEDURE notify_new_limits();
 ```
 
 

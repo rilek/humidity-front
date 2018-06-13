@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Humidity and temperature sensors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1,minimum-scale=1, maximum-scale=1">
   <link rel="stylesheet" href="/statics/css/bootstrap.min.css">
   <link rel="stylesheet" href="/statics/css/styles.css">
 </head>
@@ -10,8 +11,63 @@
 
   <div class="wrapper container">
     <h1>Czujniki</h1>
+    <button id="show-form" class="btn btn-info show-form">Niestandardowe limity</button>
 
     <div id="app"></div>
+
+    <div class="popup" id="popup" style="display: none">
+      <div class="close">×</div>
+      <h2>Dodaj niestandardowe limity</h2>
+      <form id="">
+        <div class="form-group col-sm-12">
+          <label for="f-id_sensor">ID sensora</label>
+          <input class="form-control" type="number" id="f-id_sensor" value="1">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-min_temperature">Minimalna temperatura</label>
+          <input class="form-control" type="number" id="f-min_temperature"  value="20">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-max_temperature">Maksymalna temperatura</label>
+          <input class="form-control" type="number" id="f-max_temperature"  value="25">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-min_humidity">Minimalna wilgotność</label>
+          <input class="form-control" type="number" id="f-min_humidity"  value="40">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-max_humidity">Maksymalna wilgotność</label>
+          <input class="form-control" type="number" id="f-max_humidity"  value="50">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-date_from">Od</label>
+          <input class="form-control" type="datetime-local" id="f-date_from">
+        </div>
+        <div class="form-group col-sm-6">
+          <label for="f-date_to">Do</label>
+          <input class="form-control" type="datetime-local" id="f-date_to">
+        </div>
+
+        <button type="submit" class="btn btn-success">Dodaj</button>
+      </form>
+
+      <h4>Dodane limity</h4>
+      <table class="table">
+        <thead>
+          <tr>
+            <td>ID</td>
+            <td>Sensor</td>
+            <td>Min. temp.</td>
+            <td>Maks. temp.</td>
+            <td>Min. wilg.</td>
+            <td>Maks. wilg.</td>
+            <td>Od</td>
+            <td>Do</td>
+            <td>Usuń</td>
+          </tr>
+        </thead>
+      </table>
+    </div>
   </div>
 
   <script src="/statics/js/jquery.min.js"></script>
