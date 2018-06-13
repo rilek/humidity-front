@@ -21,24 +21,37 @@ Architekturę obrazuje poniższy obrazek:
 
 ### Łańcuch komunikacji
 W projekcie występują różne sposoby komunikacji.
-RaspberryPI po wykonaniu pomiaru wysyła zapytanie POST do serwera REST z danymi pomiarowymi. Urządzenie jest połączone z internetem poprzez przewód ethernet. API po otrzymaniu zapytania przesyła je do bazy danych za pomocą kodu SQL z sekcji `Baza danych`. Baza danych po wpisaniu rekordu z pomiarem wywołuje funkcję, która emituje komunikat TCP. Komunikat ten przechwytuje serwer WebSocket, który z kolei przekazuje go aktywnemu użytkownikowi. Pomiar zostaje dopisany do aktualnie zapisanych w stanie aplikacji, przy czym pokazywane jest tylko 100 najnowszych pomiarów.
+RaspberryPI po wykonaniu pomiaru wysyła zapytanie POST do serwera REST z danymi pomiarowymi. Urządzenie jest połączone z internetem poprzez przewód ethernet. API po otrzymaniu zapytania przesyła je do bazy danych za pomocą kodu SQL z sekcji `Baza danych` (dodanie kolejnego pomiaru). Baza danych po wpisaniu rekordu z pomiarem wywołuje funkcję, która emituje komunikat TCP. Komunikat ten przechwytuje serwer WebSocket, który z kolei przekazuje go aktywnemu użytkownikowi. Pomiar zostaje dopisany do aktualnie zapisanych w stanie aplikacji, przy czym pokazywane jest tylko 100 najnowszych pomiarów.
 
 Dodatkowo użytkownik wchodząc na stronę WWW łączy się z serwerem WebSocket, który przesyła mu 100 najnowszych pomiarów.
 
 ### Strona WWW
-Strona WWW jest dostępna jako demo pod adresem [http://51.15.87.74:8888](http://51.15.87.74:8888). Zawiera ona listę czujników ze szczegółowymi danymi, oraz wykresem wartości. Dane są aktualizowane w czasie rzeczywistym. Pokazywane jest 100 najnowszych pomiarów. Poziome linie oraz kolorowy obszar między nimi ilustruje zakres akceptowalnych wartości.
+Strona WWW jest dostępna jako demo pod adresem [http://51.15.87.74:8888](http://51.15.87.74:8888). Zawiera ona listę czujników ze szczegółowymi danymi, oraz wykresem wartości. Dane są aktualizowane w czasie rzeczywistym. Pokazywane jest 100 najnowszych pomiarów. Poziome linie oraz kolorowy obszar między nimi ilustruje zakres akceptowalnych wartości. W panelu jest również formularz pozwalający dodać niestandardowe granice poprawnych wartości, oraz tabelka z aktualnie dodanymi. Możliwe jest usunięcie pozycji za pomocą krzyżyka w lewej komórce tabelki.
 
 Po przekroczeniu przez mierzony parametr wartości granicznej aktywowany jest alarm. W przypadku jego wyłączenia, kolejny alarm nie wystąpi przez okres 5 min.
 
-Przykładowy stan aplikacji www na obrazku poniżej:
+Przykładowy stan aplikacji www na obrazkach poniżej:
 
 ![Panel WWW](./docs/humidity_www.png "WWW")
+![Panel WWW z formularzem](./docs/humidity_www_2.png "WWW")
+
+Do stworzenia panelu WWW wykorzystano biblioteki:
+* Bootstrap - kwestie wizualne,
+* Socket.io - komunikacja poprzez websockety,
+* Moment.js - operacje na obiektach przedstawiających czas,
+* Chart.js - wykres,
+* jQuery - operacje na drzewie DOM,
+
+
+### Serwer
+Serwer można podzi
 
 ### Baza danych
 Baza danych złożona jest z 3 tabel:
 1. Sensors - zawiera informacje na temat miejsca położenia w firmie, oraz graniczne dopuszczalne wartości temperatury i wilgotności.
 2. Places - dokładne infomacje o tym gdzie jest czujnik - budynek, piętro, pokój
 3. Measurements - zawiera informacje o mierzacym czunjniku, czas wykonania pomiaru. Każdy rekord oznacza pojedynczy pomiar.
+4. Custom_limits - każddy rekord zawiera informację o okresie, w czasie którego granice poprawnych wartości temperatury i/lub wilgotności są zmienione.
 
 Dokładną strukturę bazy obrazuje poniższy rysunek:
 
@@ -132,7 +145,10 @@ SELECT json_build_object(
                                         WHERE measurements.id_sensor=sensors.id_sensor
                                         ORDER BY measured_at DESC
                                         LIMIT 100) measurements
-                         ORDER BY measured_at ASC) AS measurements))
+                         ORDER BY measured_at ASC) AS measurements),
+   'custom_limits', (SELECT json_agg(row_to_json(custom_limits))
+                     FROM custom_limits
+                     WHERE sensors.id_sensor=custom_limits.id_sensor))
 FROM sensors, places
 WHERE places.id_place=sensors.id_place
 ```
@@ -142,6 +158,18 @@ Przykładowy kod SQL dodający kolejny pomiar:
 ```
 INSERT INTO measurements(id_sensor, temperature, humidity, measured_at) values(1, 1.0, 1.0, '2018-06-06 09:18:02.786123')
 ```
+
+Przykładowy kod SQL dodający rekord do tabeli custom_limits:
+```
+INSERT INTO custom_limits(id_sensor, min_temperature, max_temperature, min_humidity, max_humidity, date_from, date_to) values(1, 40,45, 60, 65, '2018-06-13 19:39:12.786123', '2018-06-13 19:40:02.786123');
+```
+
+### RaspberryPi
+Urządzniem, które zarówno pobiera dane z czujników, jak i wysyła je na serwer jest RaspberryPi 2. Podłączony jest doń czujnik temperatury i wilgotności DHT11. Jest to popularny czujnik temperatury i wilgotności powietrza z interfejsem cyfrowym, jednoprzewodowym.
+* Zakres pomiarowy: temperatura 0 - 50 °C, wilgotność 20-90 %RH.
+* Dokładność: 1 °C, ±4 RH* (przy 25 °C).
+
+![Raspberry Pi w obudowie z DHT11](./docs/humidity_rpi.jpg "ERD")
 
 ### Uruchomienie backendu oraz frontendu lokalnie
 #### Wymagania
